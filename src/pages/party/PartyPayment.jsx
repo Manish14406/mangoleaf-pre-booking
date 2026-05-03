@@ -1,119 +1,172 @@
 import { useState } from 'react';
-import { useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { QrCode, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import { useBooking } from '../../context/BookingContext';
+import { supabase } from '../../lib/supabase';
 
 export default function PartyPayment() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const formData = location.state;
-  
+  const { bookingData, setBookingData } = useBooking();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('upi');
 
-  if (!formData) {
+  // Guard
+  if (!bookingData || !bookingData.menuType || !bookingData.name) {
     return <Navigate to="/party" />;
   }
 
-  // Demo advance deposit fee for party
   const PARTY_ADVANCE = 5000;
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      navigate('/confirmation', { 
-        state: { 
-          ...formData,
+
+    try {
+      // Update context first
+      const updatedBooking = {
+        ...bookingData,
+        type: 'party',
+        total: PARTY_ADVANCE,
+        bookingId: `PTY-${Math.floor(Math.random() * 10000)
+          .toString()
+          .padStart(4, '0')}`,
+      };
+
+      setBookingData(updatedBooking);
+
+      // 🔥 Insert into Supabase
+      const { error } = await supabase.from('bookings').insert([
+        {
           type: 'party',
+          name: updatedBooking.name,
+          phone: updatedBooking.phone,
+          people: updatedBooking.people,
+          date: updatedBooking.date,
+          time: updatedBooking.time,
           total: PARTY_ADVANCE,
-          bookingId: `PTY-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+          status: 'confirmed',
+        },
+      ]);
+
+      // ✅ FIXED ERROR HANDLING
+      if (error) {
+        console.error('Insert error:', error);
+
+        // 🔥 Duplicate booking
+        if (error.code === '23505') {
+          alert('You already booked this slot!');
+        } else {
+          alert('Booking failed. Please try again.');
         }
-      });
-    }, 2500);
+
+        setIsProcessing(false); // important
+        return;
+      }
+
+      // Success
+      navigate('/confirmation');
+
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      alert('Something went wrong!');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '600px', margin: '0 auto' }}>
-      <button 
-        className="btn-secondary" 
-        style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem', width: 'fit-content' }}
+    <PageWrapper
+      className="main-content"
+      style={{ gridTemplateColumns: '1fr', maxWidth: '600px', margin: '0 auto' }}
+    >
+      <button
+        className="btn-secondary"
+        style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem' }}
         onClick={() => navigate(-1)}
       >
         <ArrowLeft size={20} style={{ marginRight: '0.5rem' }} /> Back
       </button>
 
       <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Final Payment</h2>
-        
-        <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
-          <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Booking Summary</h3>
+        <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+          Final Payment
+        </h2>
+
+        {/* Summary */}
+        <div style={{
+          background: 'rgba(15, 23, 42, 0.6)',
+          padding: '1.5rem',
+          borderRadius: '12px',
+          marginBottom: '1.5rem'
+        }}>
+          <h3 style={{
+            marginBottom: '1rem',
+            borderBottom: '1px solid var(--border-color)',
+            paddingBottom: '0.5rem'
+          }}>
+            Booking Summary
+          </h3>
+
           <div className="summary-row">
             <span>Event Type</span>
-            <span style={{ fontWeight: '500' }}>{formData.eventType}</span>
+            <span>{bookingData.eventType}</span>
           </div>
+
           <div className="summary-row">
             <span>Guests</span>
-            <span>{formData.guests} Persons</span>
+            <span>{bookingData.people}</span>
           </div>
+
           <div className="summary-row">
-            <span>Menu Selection</span>
-            <span style={{ textTransform: 'capitalize' }}>{formData.menuType.replace('-', ' ')}</span>
+            <span>Date</span>
+            <span>{bookingData.date}</span>
           </div>
-          <div className="summary-row total" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border-color)' }}>
-            <span>Advance Deposit</span>
-            <span className="text-gradient" style={{ fontSize: '1.5rem' }}>₹{PARTY_ADVANCE}</span>
+
+          <div className="summary-row">
+            <span>Session</span>
+            <span>{bookingData.time}</span>
+          </div>
+
+          <div className="summary-row">
+            <span>Menu</span>
+            <span>{bookingData.menuType}</span>
+          </div>
+
+          <div className="summary-row total" style={{ marginTop: '1rem' }}>
+            <span>Advance</span>
+            <span style={{ fontSize: '1.4rem' }}>₹{PARTY_ADVANCE}</span>
           </div>
         </div>
 
-        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid var(--secondary)', padding: '1rem', borderRadius: '8px', marginBottom: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--secondary)', fontSize: '0.9rem', fontWeight: '500' }}>
-            Final offers and discounts will be provided at the venue.
-          </p>
-        </div>
-
+        {/* Payment options */}
         <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ marginBottom: '1rem' }}>Select Payment Method</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-            <button 
-              className={`radio-card ${paymentMethod === 'upi' ? 'active' : ''}`}
-              style={{ padding: '1rem', border: paymentMethod === 'upi' ? '2px solid var(--primary)' : '1px solid var(--border-color)', borderRadius: '8px', background: paymentMethod === 'upi' ? 'rgba(245, 158, 11, 0.1)' : 'transparent' }}
-              onClick={() => setPaymentMethod('upi')}
-            >
-              <Smartphone size={24} style={{ margin: '0 auto 0.5rem', display: 'block', color: paymentMethod === 'upi' ? 'var(--primary)' : 'inherit' }} />
-              <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>UPI</div>
+          <h4>Select Payment Method</h4>
+
+          <div className="grid-3col">
+            <button onClick={() => setPaymentMethod('upi')}>
+              <Smartphone /> UPI
             </button>
-            <button 
-              className={`radio-card ${paymentMethod === 'card' ? 'active' : ''}`}
-              style={{ padding: '1rem', border: paymentMethod === 'card' ? '2px solid var(--primary)' : '1px solid var(--border-color)', borderRadius: '8px', background: paymentMethod === 'card' ? 'rgba(245, 158, 11, 0.1)' : 'transparent' }}
-              onClick={() => setPaymentMethod('card')}
-            >
-              <CreditCard size={24} style={{ margin: '0 auto 0.5rem', display: 'block', color: paymentMethod === 'card' ? 'var(--primary)' : 'inherit' }} />
-              <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>Card</div>
+            <button onClick={() => setPaymentMethod('card')}>
+              <CreditCard /> Card
             </button>
-            <button 
-              className={`radio-card ${paymentMethod === 'scan' ? 'active' : ''}`}
-              style={{ padding: '1rem', border: paymentMethod === 'scan' ? '2px solid var(--primary)' : '1px solid var(--border-color)', borderRadius: '8px', background: paymentMethod === 'scan' ? 'rgba(245, 158, 11, 0.1)' : 'transparent' }}
-              onClick={() => setPaymentMethod('scan')}
-            >
-              <QrCode size={24} style={{ margin: '0 auto 0.5rem', display: 'block', color: paymentMethod === 'scan' ? 'var(--primary)' : 'inherit' }} />
-              <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>Scan & Pay</div>
+            <button onClick={() => setPaymentMethod('scan')}>
+              <QrCode /> Scan
             </button>
           </div>
         </div>
 
+        {/* QR */}
         {paymentMethod === 'scan' && (
-          <div className="qr-container" style={{ marginBottom: '2rem' }}>
-            <div className="qr-code-wrapper" style={{ margin: '0' }}>
-              <QrCode size={150} color="var(--bg-dark)" />
-              {isProcessing && <div className="scan-line"></div>}
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>Scan using any UPI app</p>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <QrCode size={140} />
+            <p>Scan to pay ₹{PARTY_ADVANCE}</p>
           </div>
         )}
 
-        <button 
-          className="btn-primary" 
+        {/* Pay */}
+        <button
+          className="btn-primary"
           onClick={handlePayment}
           disabled={isProcessing}
         >

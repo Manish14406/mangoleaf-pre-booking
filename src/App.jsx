@@ -10,6 +10,9 @@ import LiquorMenu from './pages/party/LiquorMenu';
 import NonLiquorMenu from './pages/party/NonLiquorMenu';
 import PartyPayment from './pages/party/PartyPayment';
 import Confirmation from './pages/Confirmation';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogin from './pages/admin/AdminLogin';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import './index.css';
 
 function AnimatedRoutes() {
@@ -34,6 +37,17 @@ function AnimatedRoutes() {
         
         {/* Shared Confirmation */}
         <Route path="/confirmation" element={<Confirmation />} />
+        
+        {/* Admin Dashboard */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          } 
+        />
       </Routes>
     </AnimatePresence>
   );

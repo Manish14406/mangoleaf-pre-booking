@@ -12,7 +12,7 @@ const pageTransition = {
   duration: 0.4
 };
 
-export default function PageWrapper({ children, className = '' }) {
+export default function PageWrapper({ children, className = '', style = {} }) {
   return (
     <motion.div
       initial="initial"
@@ -21,7 +21,9 @@ export default function PageWrapper({ children, className = '' }) {
       variants={pageVariants}
       transition={pageTransition}
       className={className}
-      style={{ width: '100%' }}
+      // Merge caller's style with base width: 100%
+      // Previously `style` prop was silently ignored — maxWidth/margin were lost
+      style={{ width: '100%', ...style }}
     >
       {children}
     </motion.div>

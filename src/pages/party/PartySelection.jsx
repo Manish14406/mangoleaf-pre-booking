@@ -1,52 +1,58 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import { useBooking } from '../../context/BookingContext';
 
+// All selectable event types for the party hall
 const EVENT_TYPES = [
-  "Birthday Party", "Wedding Anniversary", "Engagement Party", 
-  "Office Get-Together", "Team Outing", "Family Get-Together", 
-  "Farewell Party", "Bachelor Party", "Bachelorette Party", 
-  "Reunion Party", "Baby Shower", "Housewarming Party", 
-  "Festival Celebration", "Corporate Event", "Promotion Celebration"
+  '🎂 Birthday Party',       '💍 Wedding Anniversary',  '💎 Engagement Party',
+  '🏢 Office Get-Together',  '🤝 Team Outing',          '👨‍👩‍👧 Family Gathering',
+  '👋 Farewell Party',       '🥂 Bachelor Party',       '💃 Bachelorette Party',
+  '🔁 Reunion Party',        '🍼 Baby Shower',          '🏠 Housewarming',
+  '🎉 Festival Celebration', '📊 Corporate Event',      '🏆 Promotion Celebration',
 ];
 
 export default function PartySelection() {
   const navigate = useNavigate();
+  const { bookingData, setBookingData } = useBooking();
 
   const handleSelect = (eventType) => {
-    navigate('/party/details', { state: { eventType } });
+    // Save into global context — no route state needed
+    setBookingData({ ...bookingData, type: 'party', eventType });
+    navigate('/party/details');
   };
 
   return (
-    <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '800px', margin: '0 auto' }}>
-      <button 
-        className="btn-secondary" 
-        style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem', width: 'fit-content' }}
+    <PageWrapper
+      className="main-content"
+      style={{ gridTemplateColumns: '1fr', maxWidth: '860px', margin: '0 auto' }}
+    >
+      {/* Back */}
+      <button
+        className="btn-secondary"
+        style={{ marginBottom: '1rem', width: 'fit-content' }}
         onClick={() => navigate('/')}
       >
-        <ArrowLeft size={20} style={{ marginRight: '0.5rem' }} /> Back
+        <ArrowLeft size={18} /> Back
       </button>
 
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ marginBottom: '2rem', textAlign: 'center' }}>Select Event Type</h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-          {EVENT_TYPES.map((type, idx) => (
-            <button 
-              key={idx}
-              className="btn-secondary"
-              style={{ padding: '1rem', height: '100%', textAlign: 'center', transition: 'all 0.3s ease' }}
+      <div className="glass-panel">
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', marginBottom: '0.4rem' }}>
+            Select Event Type
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Choose the occasion for your party hall booking
+          </p>
+        </div>
+
+        {/* Auto-fill responsive grid — 1 col on mobile, up to 3 on desktop */}
+        <div className="event-grid">
+          {EVENT_TYPES.map((type) => (
+            <button
+              key={type}
+              className="event-btn"
               onClick={() => handleSelect(type)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.background = 'rgba(245, 158, 11, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-color)';
-                e.currentTarget.style.color = 'var(--text-main)';
-                e.currentTarget.style.background = 'transparent';
-              }}
             >
               {type}
             </button>

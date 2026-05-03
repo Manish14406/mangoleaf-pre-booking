@@ -1,83 +1,158 @@
-import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, FileText, Download } from 'lucide-react';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { CheckCircle, Home, Calendar, Clock, Users, Phone, User, Hash } from 'lucide-react';
 import PageWrapper from '../components/PageWrapper';
+import { useBooking } from '../context/BookingContext';
 
 export default function Confirmation() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const state = location.state || {};
+  const { bookingData, setBookingData } = useBooking();
+
+  // Guard: redirect if accessed directly
+  if (!bookingData || !bookingData.name) {
+    return <Navigate to="/" />;
+  }
+
+  const handleGoHome = () => {
+    // Clear context so back button on other pages can't return to a stale state
+    setBookingData({});
+    navigate('/');
+  };
+
+  // Build rows from bookingData — only show fields that exist
+  const isParty = bookingData.type === 'party';
+
+  const detailRows = [
+    bookingData.bookingId && { icon: Hash,     label: 'Booking ID',    value: bookingData.bookingId },
+    bookingData.name      && { icon: User,     label: 'Name',          value: bookingData.name },
+    bookingData.phone     && { icon: Phone,    label: 'Phone',         value: bookingData.phone },
+    bookingData.people    && { icon: Users,    label: isParty ? 'Guests' : 'People', value: `${bookingData.people} persons` },
+    bookingData.date      && { icon: Calendar, label: 'Date',          value: bookingData.date },
+    bookingData.time      && { icon: Clock,    label: 'Session / Time', value: bookingData.time },
+    isParty && bookingData.eventType  && { icon: null, label: 'Event Type',  value: bookingData.eventType },
+    isParty && bookingData.menuType   && { icon: null, label: 'Menu',        value: bookingData.menuType.replace('-', ' ') },
+  ].filter(Boolean);
 
   return (
-    <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '600px', margin: '0 auto' }}>
-      <div className="glass-panel" style={{ padding: '3rem' }}>
-        <div className="invoice-header">
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div className="success-check">
-              <CheckCircle size={32} />
-            </div>
+    <PageWrapper
+      className="main-content"
+      style={{ gridTemplateColumns: '1fr', maxWidth: '540px', margin: '0 auto' }}
+    >
+      <div className="glass-panel" style={{ textAlign: 'center' }}>
+
+        {/* Success icon */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <div className="success-check">
+            <CheckCircle size={32} />
           </div>
-          <h2 className="text-gradient">Booking Confirmed!</h2>
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>Your reservation has been secured successfully.</p>
         </div>
 
-        <div className="invoice-details">
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)' }}>
-              <FileText size={20} />
-              <span style={{ fontWeight: 'bold' }}>Booking ID: {state.bookingId || `BKG-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}</span>
-            </div>
-            <span style={{ color: 'var(--text-muted)' }}>{new Date().toLocaleDateString()}</span>
-          </div>
+        <h2 style={{ marginBottom: '0.4rem', fontSize: 'clamp(1.4rem, 5vw, 1.9rem)' }}>
+          🎉 Booking Confirmed!
+        </h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>
+          {isParty
+            ? 'Your party hall has been successfully reserved.'
+            : 'Your table has been successfully reserved.'}
+        </p>
 
-          <div className="invoice-row">
-            <span style={{ color: 'var(--text-muted)' }}>Type</span>
-            <span style={{ fontWeight: 'bold' }}>{state.type === 'party' ? 'Party Hall Booking' : 'Table Reservation'}</span>
-          </div>
-          
-          {state.type === 'party' && state.eventType && (
-            <div className="invoice-row">
-              <span style={{ color: 'var(--text-muted)' }}>Event</span>
-              <span>{state.eventType}</span>
+        {/* ── Booking Details Card ──────────────── */}
+        <div style={{
+          textAlign: 'left',
+          background: 'rgba(15, 23, 42, 0.55)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          marginBottom: '1.75rem',
+        }}>
+          <p style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+            marginBottom: '1rem',
+          }}>
+            Booking Details
+          </p>
+
+          {detailRows.map(({ icon: Icon, label, value }) => (
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.6rem 0',
+                borderBottom: '1px solid var(--border-color)',
+                gap: '1rem',
+              }}
+            >
+              <span style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'var(--text-muted)',
+                fontSize: '0.88rem',
+                minWidth: 0,
+              }}>
+                {Icon && <Icon size={14} style={{ flexShrink: 0 }} />}
+                {label}
+              </span>
+              <span style={{
+                fontWeight: 500,
+                fontSize: '0.9rem',
+                textAlign: 'right',
+                textTransform: 'capitalize',
+                wordBreak: 'break-word',
+              }}>
+                {value}
+              </span>
+            </div>
+          ))}
+
+          {/* Total paid */}
+          {bookingData.total != null && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.75rem 0 0',
+              marginTop: '0.25rem',
+            }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                Total Paid
+              </span>
+              <span className="text-gradient" style={{ fontSize: '1.35rem', fontWeight: 700 }}>
+                ₹{bookingData.total}
+              </span>
             </div>
           )}
-
-          <div className="invoice-row">
-            <span style={{ color: 'var(--text-muted)' }}>Date & Time</span>
-            <span>{state.date} at {state.time}</span>
-          </div>
-          <div className="invoice-row">
-            <span style={{ color: 'var(--text-muted)' }}>Guests</span>
-            <span>{state.guests} Persons</span>
-          </div>
-          
-          {state.type === 'party' && state.menuType && (
-            <div className="invoice-row">
-              <span style={{ color: 'var(--text-muted)' }}>Menu Selection</span>
-              <span style={{ textTransform: 'capitalize' }}>{state.menuType.replace('-', ' ')}</span>
-            </div>
-          )}
-
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px dashed var(--border-color)' }}>
-            <div className="invoice-row" style={{ marginTop: '1rem', fontSize: '1.25rem', fontWeight: 'bold' }}>
-              <span>Amount Paid</span>
-              <span className="text-gradient">₹{state.total?.toFixed(2)}</span>
-            </div>
-          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button className="btn-secondary" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
-            <Download size={18} />
-            Download PDF
-          </button>
-          <button className="btn-primary" style={{ flex: 1, marginTop: 0 }} onClick={() => navigate('/')}>
-            Back to Home
-          </button>
-        </div>
-        
-        <div className="invoice-footer">
-          <span style={{ fontSize: '0.875rem' }}>Show this confirmation at the entrance to claim your booking.</span>
-        </div>
+        {/* ── Discount notice for table bookings ── */}
+        {!isParty && (
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '8px',
+            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+            fontSize: '0.875rem',
+            color: 'var(--secondary)',
+          }}>
+            🎁 Show this confirmation at the pub to claim your <strong>10% discount</strong>!
+          </div>
+        )}
+
+        {/* ── Back to Home ─────────────────────── */}
+        <button
+          className="btn-primary"
+          onClick={handleGoHome}
+          style={{ marginTop: 0 }}
+        >
+          <Home size={18} /> Back to Home
+        </button>
+
       </div>
     </PageWrapper>
   );

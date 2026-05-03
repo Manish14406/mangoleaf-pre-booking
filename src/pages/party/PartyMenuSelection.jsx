@@ -1,29 +1,28 @@
-import { useLocation, useNavigate, Navigate } from 'react-router-dom';
+// ✅ Context replaces location.state — no route state passed anywhere
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Wine, Coffee, ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import { useBooking } from '../../context/BookingContext';
 
 export default function PartyMenuSelection() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const prevState = location.state;
+  const { bookingData, setBookingData } = useBooking();
 
-  if (!prevState) {
+  // Guard: must have arrived from PartyGuestDetails with guest data
+  if (!bookingData || !bookingData.eventType || !bookingData.name) {
     return <Navigate to="/party" />;
   }
 
   const handleSelect = (menuType) => {
-    navigate(`/party/menu/${menuType}`, { 
-      state: { 
-        ...prevState,
-        menuType
-      } 
-    });
+    // Save menu type into context before navigating
+    setBookingData(prev => ({ ...prev, menuType }));
+    navigate(`/party/menu/${menuType}`);
   };
 
   return (
     <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '800px', margin: '0 auto' }}>
-      <button 
-        className="btn-secondary" 
+      <button
+        className="btn-secondary"
         style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem', width: 'fit-content' }}
         onClick={() => navigate(-1)}
       >
@@ -33,9 +32,9 @@ export default function PartyMenuSelection() {
       <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center' }}>
         <h2 style={{ marginBottom: '2rem', fontSize: '2rem' }}>Choose Menu Type</h2>
         <p style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}>Applicable only for Party Hall Bookings</p>
-        
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-          <button 
+          <button
             className="radio-card"
             style={{ width: '100%', border: 'none', background: 'transparent' }}
             onClick={() => handleSelect('liquor')}
@@ -47,7 +46,7 @@ export default function PartyMenuSelection() {
             </div>
           </button>
 
-          <button 
+          <button
             className="radio-card"
             style={{ width: '100%', border: 'none', background: 'transparent' }}
             onClick={() => handleSelect('non-liquor')}

@@ -1,6 +1,8 @@
-import { useLocation, useNavigate, Navigate } from 'react-router-dom';
+// ✅ Reads from BookingContext — no location.state dependency
+import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import { useBooking } from '../../context/BookingContext';
 
 const MENU_ITEMS = [
   { category: "Whiskey", items: ["Jack Daniel's Old No. 7", "Johnnie Walker Black Label", "Chivas Regal 12 YO", "Jameson Irish Whiskey", "Maker's Mark Bourbon"] },
@@ -15,22 +17,23 @@ const MENU_ITEMS = [
 ];
 
 export default function LiquorMenu() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const prevState = location.state;
+  const { bookingData } = useBooking();
 
-  if (!prevState || prevState.menuType !== 'liquor') {
+  // Guard: must have arrived via correct menu selection
+  if (!bookingData || !bookingData.menuType || bookingData.menuType !== 'liquor') {
     return <Navigate to="/party" />;
   }
 
   const handleContinue = () => {
-    navigate('/party/payment', { state: prevState });
+    // Context already has all data — navigate directly
+    navigate('/party/payment');
   };
 
   return (
     <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '1000px', margin: '0 auto' }}>
-      <button 
-        className="btn-secondary" 
+      <button
+        className="btn-secondary"
         style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem', width: 'fit-content' }}
         onClick={() => navigate(-1)}
       >
@@ -66,7 +69,7 @@ export default function LiquorMenu() {
             * This is a sample menu. Final items and brands are subject to availability.
           </div>
           <button className="btn-primary" style={{ width: 'auto', marginTop: 0 }} onClick={handleContinue}>
-            Confirm Menu & Proceed <ArrowRight size={20} />
+            Confirm Menu &amp; Proceed <ArrowRight size={20} />
           </button>
         </div>
       </div>
