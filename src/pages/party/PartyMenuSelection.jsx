@@ -1,64 +1,82 @@
-// ✅ Context replaces location.state — no route state passed anywhere
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Wine, Coffee, ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import Card from '../../components/Card';
+import Section from '../../components/Section';
+import Button from '../../components/Button';
 import { useBooking } from '../../context/BookingContext';
 
 export default function PartyMenuSelection() {
   const navigate = useNavigate();
   const { bookingData, setBookingData } = useBooking();
 
-  // Guard: must have arrived from PartyGuestDetails with guest data
   if (!bookingData || !bookingData.eventType || !bookingData.name) {
     return <Navigate to="/party" />;
   }
 
   const handleSelect = (menuType) => {
-    // Save menu type into context before navigating
     setBookingData(prev => ({ ...prev, menuType }));
     navigate(`/party/menu/${menuType}`);
   };
 
   return (
-    <PageWrapper className="main-content" style={{ gridTemplateColumns: '1fr', maxWidth: '800px', margin: '0 auto' }}>
-      <button
-        className="btn-secondary"
-        style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem', width: 'fit-content' }}
+    <PageWrapper className="main-content">
+      <div className="progress-container">
+        <div className="progress-line"></div>
+        <div className="progress-step completed">1</div>
+        <div className="progress-step completed">2</div>
+        <div className="progress-step active">3</div>
+        <div className="progress-step">4</div>
+      </div>
+
+      <Button
+        variant="secondary"
+        className="mb-6"
+        style={{ width: 'fit-content' }}
         onClick={() => navigate(-1)}
       >
-        <ArrowLeft size={20} style={{ marginRight: '0.5rem' }} /> Back
-      </button>
+        <ArrowLeft size={18} /> Back
+      </Button>
 
-      <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center' }}>
-        <h2 style={{ marginBottom: '2rem', fontSize: '2rem' }}>Choose Menu Type</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '3rem' }}>Applicable only for Party Hall Bookings</p>
+      <Card>
+        <Section 
+          title="Choose Menu Type" 
+          subtitle="Applicable only for Party Hall Bookings"
+          className="mb-8"
+        />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div className="desktop-grid">
           <button
-            className="radio-card"
-            style={{ width: '100%', border: 'none', background: 'transparent' }}
             onClick={() => handleSelect('liquor')}
+            style={{ border: 'none', background: 'transparent', textAlign: 'left', width: '100%' }}
           >
-            <div className="radio-content hover-scale" style={{ height: '100%', padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <Wine size={48} className="radio-icon" style={{ marginBottom: '1rem' }} />
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Liquor Menu</h3>
-              <p style={{ color: 'var(--text-muted)' }}>Premium spirits, wines, beers, and expertly crafted cocktails.</p>
-            </div>
+            <Card className="hover-scale flex-center" style={{ flexDirection: 'column', height: '100%', padding: '2rem' }}>
+              <div style={{ background: 'rgba(22, 163, 74, 0.1)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                <Wine size={48} color="var(--primary)" />
+              </div>
+              <h3 className="mb-4">Liquor Menu</h3>
+              <p className="text-secondary text-center">
+                Premium spirits, wines, beers, and expertly crafted cocktails.
+              </p>
+            </Card>
           </button>
 
           <button
-            className="radio-card"
-            style={{ width: '100%', border: 'none', background: 'transparent' }}
             onClick={() => handleSelect('non-liquor')}
+            style={{ border: 'none', background: 'transparent', textAlign: 'left', width: '100%' }}
           >
-            <div className="radio-content hover-scale" style={{ height: '100%', padding: '2rem', border: '1px solid var(--border-color)' }}>
-              <Coffee size={48} className="radio-icon" style={{ marginBottom: '1rem', color: 'var(--secondary)' }} />
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Non-Liquor Menu</h3>
-              <p style={{ color: 'var(--text-muted)' }}>Delicious starters, main courses, desserts, and mocktails.</p>
-            </div>
+            <Card className="hover-scale flex-center" style={{ flexDirection: 'column', height: '100%', padding: '2rem' }}>
+              <div style={{ background: 'rgba(34, 197, 94, 0.1)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                <Coffee size={48} color="var(--accent)" />
+              </div>
+              <h3 className="mb-4">Non-Liquor Menu</h3>
+              <p className="text-secondary text-center">
+                Delicious starters, main courses, desserts, and mocktails.
+              </p>
+            </Card>
           </button>
         </div>
-      </div>
+      </Card>
     </PageWrapper>
   );
 }

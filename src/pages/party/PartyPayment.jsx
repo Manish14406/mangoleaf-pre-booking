@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { QrCode, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import Card from '../../components/Card';
+import Section from '../../components/Section';
+import Button from '../../components/Button';
 import { useBooking } from '../../context/BookingContext';
 import { supabase } from '../../lib/supabase';
 
@@ -10,169 +13,190 @@ export default function PartyPayment() {
   const { bookingData, setBookingData } = useBooking();
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('upi');
 
-  // Guard
   if (!bookingData || !bookingData.menuType || !bookingData.name) {
     return <Navigate to="/party" />;
   }
 
-  const PARTY_ADVANCE = 5000;
+  const totalAmount = bookingData.total || 5000;
+  const advanceAmount = bookingData.advance || Math.round(totalAmount * 0.5);
 
   const handlePayment = async () => {
     setIsProcessing(true);
 
     try {
-      // Update context first
-      const updatedBooking = {
-        ...bookingData,
-        type: 'party',
-        total: PARTY_ADVANCE,
-        bookingId: `PTY-${Math.floor(Math.random() * 10000)
-          .toString()
-          .padStart(4, '0')}`,
-      };
-
-      setBookingData(updatedBooking);
-
-      // 🔥 Insert into Supabase
-      const { error } = await supabase.from('bookings').insert([
-        {
-          type: 'party',
-          name: updatedBooking.name,
-          phone: updatedBooking.phone,
-          people: updatedBooking.people,
-          date: updatedBooking.date,
-          time: updatedBooking.time,
-          total: PARTY_ADVANCE,
-          status: 'confirmed',
-        },
-      ]);
-
-      // ✅ FIXED ERROR HANDLING
-      if (error) {
-        console.error('Insert error:', error);
-
-        // 🔥 Duplicate booking
-        if (error.code === '23505') {
-          alert('You already booked this slot!');
-        } else {
-          alert('Booking failed. Please try again.');
-        }
-
-        setIsProcessing(false); // important
+      if (!bookingData.name || !bookingData.phone || !advanceAmount) {
+        alert("Missing booking data");
+        setIsProcessing(false);
         return;
       }
 
-      // Success
-      navigate('/confirmation');
+      const { data, error: functionError } = await supabase.functions.invoke("create-order", {
+        body: { amount: advanceAmount }
+      });
+
+      if (functionError) {
+        console.error('Edge function error:', functionError);
+        alert('Failed to initialize payment.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: "INR",
+        name: "Mango Leaf",
+        description: "Party Booking",
+        order_id: data.id,
+        handler: async function (response) {
+          const insertPayload = {
+            name: bookingData.name,
+            phone: bookingData.phone,
+            guests: Number(bookingData.guests || bookingData.people),
+            date: bookingData.date,
+            time: bookingData.time,
+            menu_type: bookingData.partyType || bookingData.menuType || bookingData.eventType,
+            total: Number(totalAmount),
+            advance_paid: Number(advanceAmount),
+            status: "confirmed"
+          };
+
+          const { error } = await supabase
+            .from("party_bookings")
+            .insert([insertPayload])
+            .select();
+
+          if (error) {
+            console.error("SUPABASE INSERT ERROR:", error);
+            alert(error.message);
+            setIsProcessing(false);
+            return;
+          }
+
+          setBookingData({
+            ...bookingData,
+            type: 'party',
+            total: totalAmount,
+            advance: advanceAmount,
+            bookingId: `PTY-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+            paymentId: response.razorpay_payment_id
+          });
+
+          navigate("/confirmation");
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function () {
+        alert("Payment failed. Try again.");
+        setIsProcessing(false);
+      });
+      rzp.open();
 
     } catch (err) {
       console.error('Unexpected error:', err);
       alert('Something went wrong!');
-    } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <PageWrapper
-      className="main-content"
-      style={{ gridTemplateColumns: '1fr', maxWidth: '600px', margin: '0 auto' }}
-    >
-      <button
-        className="btn-secondary"
-        style={{ border: 'none', marginBottom: '1rem', display: 'inline-flex', padding: '0.5rem' }}
+    <PageWrapper className="main-content">
+      <div className="progress-container">
+        <div className="progress-line"></div>
+        <div className="progress-step completed">1</div>
+        <div className="progress-step completed">2</div>
+        <div className="progress-step completed">3</div>
+        <div className="progress-step active">4</div>
+      </div>
+
+      <Button
+        variant="secondary"
+        className="mb-6"
+        style={{ width: 'fit-content' }}
         onClick={() => navigate(-1)}
       >
-        <ArrowLeft size={20} style={{ marginRight: '0.5rem' }} /> Back
-      </button>
+        <ArrowLeft size={18} /> Back
+      </Button>
 
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-          Final Payment
-        </h2>
+      <Card>
+        <Section title="Final Payment" className="mb-6" />
 
-        {/* Summary */}
         <div style={{
-          background: 'rgba(15, 23, 42, 0.6)',
+          background: 'rgba(0, 0, 0, 0.2)',
           padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '1.5rem'
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '2rem'
         }}>
-          <h3 style={{
-            marginBottom: '1rem',
+          <h3 className="mb-4" style={{
             borderBottom: '1px solid var(--border-color)',
-            paddingBottom: '0.5rem'
+            paddingBottom: '0.75rem'
           }}>
             Booking Summary
           </h3>
 
-          <div className="summary-row">
-            <span>Event Type</span>
-            <span>{bookingData.eventType}</span>
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Event Type</span>
+            <span className="font-medium text-right">{bookingData.eventType}</span>
           </div>
 
-          <div className="summary-row">
-            <span>Guests</span>
-            <span>{bookingData.people}</span>
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Guests</span>
+            <span className="font-medium">{bookingData.people}</span>
           </div>
 
-          <div className="summary-row">
-            <span>Date</span>
-            <span>{bookingData.date}</span>
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Date</span>
+            <span className="font-medium">{bookingData.date}</span>
           </div>
 
-          <div className="summary-row">
-            <span>Session</span>
-            <span>{bookingData.time}</span>
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Session</span>
+            <span className="font-medium text-right">{bookingData.time === 'morning' ? '12:00 PM - 3:00 PM' : bookingData.time === 'night' ? '7:00 PM - 11:00 PM' : bookingData.time}</span>
           </div>
 
-          <div className="summary-row">
-            <span>Menu</span>
-            <span>{bookingData.menuType}</span>
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Menu</span>
+            <span className="font-medium" style={{ textTransform: 'capitalize' }}>{bookingData.menuType}</span>
           </div>
 
-          <div className="summary-row total" style={{ marginTop: '1rem' }}>
-            <span>Advance</span>
-            <span style={{ fontSize: '1.4rem' }}>₹{PARTY_ADVANCE}</span>
+          <div className="flex-between mb-4 mt-6">
+            <span className="text-secondary">Base Food Total</span>
+            <span className="font-medium">₹{bookingData.baseTotal || 0}</span>
+          </div>
+
+          {(bookingData.menuType === 'liquor' || bookingData.liquorCharge > 0) && (
+            <div className="flex-between mb-4">
+              <span className="text-secondary">Liquor Charge (10%)</span>
+              <span className="font-medium">₹{bookingData.liquorCharge || 0}</span>
+            </div>
+          )}
+
+          <div className="flex-between mt-6 pt-4" style={{ borderTop: '1px dashed var(--border-color)' }}>
+            <span className="font-medium">Total Bill</span>
+            <span className="text-gradient" style={{ fontSize: '1.25rem', fontWeight: 600 }}>₹{totalAmount}</span>
+          </div>
+
+          <div className="flex-between mt-4">
+            <span className="font-bold text-primary">Advance (50%)</span>
+            <span className="font-bold text-primary" style={{ fontSize: '1.5rem' }}>₹{advanceAmount}</span>
           </div>
         </div>
 
-        {/* Payment options */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h4>Select Payment Method</h4>
-
-          <div className="grid-3col">
-            <button onClick={() => setPaymentMethod('upi')}>
-              <Smartphone /> UPI
-            </button>
-            <button onClick={() => setPaymentMethod('card')}>
-              <CreditCard /> Card
-            </button>
-            <button onClick={() => setPaymentMethod('scan')}>
-              <QrCode /> Scan
-            </button>
-          </div>
-        </div>
-
-        {/* QR */}
-        {paymentMethod === 'scan' && (
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <QrCode size={140} />
-            <p>Scan to pay ₹{PARTY_ADVANCE}</p>
-          </div>
-        )}
-
-        {/* Pay */}
-        <button
-          className="btn-primary"
+        <Button
           onClick={handlePayment}
           disabled={isProcessing}
+          style={{ fontSize: '1.1rem', padding: '16px' }}
         >
-          {isProcessing ? 'Processing...' : `Pay ₹${PARTY_ADVANCE}`}
-        </button>
-      </div>
+          {isProcessing ? 'Processing...' : `Pay Advance ₹${advanceAmount}`}
+        </Button>
+      </Card>
     </PageWrapper>
   );
 }

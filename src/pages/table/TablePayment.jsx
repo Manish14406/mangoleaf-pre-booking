@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { QrCode, CreditCard, Smartphone, ArrowLeft } from 'lucide-react';
 import PageWrapper from '../../components/PageWrapper';
+import Card from '../../components/Card';
+import Section from '../../components/Section';
+import Button from '../../components/Button';
 import { useBooking } from '../../context/BookingContext';
 import { supabase } from '../../lib/supabase';
 
-// ✅ Anon key for unauthenticated edge function calls
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -14,9 +16,7 @@ export default function TablePayment() {
   const { bookingData } = useBooking();
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('upi');
 
-  // Guard
   if (!bookingData || !bookingData.name) {
     return <Navigate to="/table" />;
   }
@@ -24,13 +24,11 @@ export default function TablePayment() {
   const total = bookingData.total;
 
   const handlePayment = async () => {
-    // 🔥 prevent double click
     if (isProcessing) return;
 
     setIsProcessing(true);
 
     try {
-      // 🔹 Fetch bookings
       const { data, error: bookedError } = await supabase
         .from('table_bookings')
         .select('table_id, status')
@@ -44,13 +42,11 @@ export default function TablePayment() {
         return;
       }
 
-      // 🔹 Only CONFIRMED bookings block tables
       const bookedIds = (data || [])
         .filter(item => item.status === 'confirmed')
         .map(item => item.table_id)
         .filter(id => id !== null);
 
-      // 🔹 Fetch all tables
       const { data: tables, error: tablesError } = await supabase
         .from('tables')
         .select('id');
@@ -62,29 +58,16 @@ export default function TablePayment() {
         return;
       }
 
-      // 🔹 Find available table
       const availableTable = tables.find(
         table => !bookedIds.includes(table.id)
       );
 
-      // 🔥 check BEFORE insert
       if (!availableTable) {
         alert("No tables available");
         setIsProcessing(false);
         return;
       }
-      
-          console.log("BOOKING DATA:", {
-      table_id: availableTable?.id,
-      name: bookingData?.name,
-      phone: bookingData?.phone,
-      people: bookingData?.people,
-      date: bookingData?.date,
-      time: bookingData?.time,
-      total: bookingData?.total
-      });
 
-      // 🔹 Lock table (pending)
       const { data: pendingBooking, error: pendingError } = await supabase
         .from('table_bookings')
         .insert([
@@ -102,31 +85,23 @@ export default function TablePayment() {
         .select()
         .single();
 
-          console.log("INSERT RESPONSE:", pendingBooking);
-           console.log("INSERT ERROR:", pendingError);
-
       if (pendingError) {
-  console.error("FULL ERROR:", pendingError);
-  alert(pendingError.message);
+        console.error("FULL ERROR:", pendingError);
+        if (pendingError.code === '23505') {
+          alert("Table just got booked by someone else. Try again.");
+        } else {
+          alert("Booking failed. Try again.");
+        }
+        setIsProcessing(false);
+        return;
+      }
 
-  if (pendingError.code === '23505') {
-    alert("Table just got booked by someone else. Try again.");
-  } else {
-    alert("Booking failed. Try again.");
-  }
-
-  setIsProcessing(false);
-  return;
-}
-      // 🔹 Create Razorpay order via Edge Function
-      // We call the function directly with fetch so it works for anonymous users
       const fnResponse = await fetch(
         `${SUPABASE_URL}/functions/v1/create-order`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // ✅ Use anon key — this is safe for unauthenticated users
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
             'apikey': SUPABASE_ANON_KEY,
           },
@@ -135,13 +110,8 @@ export default function TablePayment() {
       );
 
       const orderData = await fnResponse.json();
-      console.log('📦 ORDER DATA:', orderData);
 
-      // ✅ Validate that we got a real Razorpay order id back
       if (!fnResponse.ok || !orderData?.id) {
-        console.error('Order creation failed:', orderData);
-
-        // cleanup pending booking
         await supabase
           .from('table_bookings')
           .delete()
@@ -150,7 +120,7 @@ export default function TablePayment() {
         alert(
           orderData?.error
             ? `Payment init failed: ${orderData.error}`
-            : 'Failed to initialize payment. Check Razorpay secrets in Supabase Dashboard.'
+            : 'Failed to initialize payment. Check Razorpay secrets.'
         );
         setIsProcessing(false);
         return;
@@ -163,12 +133,10 @@ export default function TablePayment() {
         name: "Mangoleaf PUB",
         description: "Table Booking",
         order_id: orderData.id,
-
         handler: async function (response) {
           setIsProcessing(true);
 
           try {
-            // 🔹 Confirm booking
             const { error } = await supabase
               .from('table_bookings')
               .update({
@@ -193,38 +161,23 @@ export default function TablePayment() {
             setIsProcessing(false);
           }
         },
-
         prefill: {
           name: bookingData.name,
           contact: bookingData.phone
         },
-
-        method: {
-          upi: true,
-          card: true,
-          netbanking: true,
-          wallet: true
-        },
-
         theme: {
-          color: "#d97706"
+          color: "#16a34a"
         },
-
         modal: {
           ondismiss: async function () {
-            // 🔹 cleanup if user closes popup
             await supabase
               .from('table_bookings')
               .delete()
               .eq('id', pendingBooking.id);
-
             setIsProcessing(false);
           }
         }
       };
-
-      console.log('✅ ORDER DATA:', orderData);
-      console.log('✅ KEY:', import.meta.env.VITE_RAZORPAY_KEY_ID);
 
       const rzp = new window.Razorpay(options);
 
@@ -238,7 +191,6 @@ export default function TablePayment() {
         setIsProcessing(false);
       });
 
-      // 🔥 handle open failure
       try {
         rzp.open();
       } catch (err) {
@@ -259,30 +211,66 @@ export default function TablePayment() {
   };
 
   return (
-    <PageWrapper
-      className="main-content"
-      style={{ gridTemplateColumns: '1fr', maxWidth: '560px', margin: '0 auto' }}
-    >
-      <button
-        className="btn-secondary"
-        style={{ marginBottom: '1rem' }}
+    <PageWrapper className="main-content" style={{ maxWidth: '600px' }}>
+      <Button
+        variant="secondary"
+        className="mb-6"
+        style={{ width: 'fit-content' }}
         onClick={() => navigate(-1)}
       >
         <ArrowLeft size={18} /> Back
-      </button>
+      </Button>
 
-      <div className="glass-panel">
-        <h2 style={{ textAlign: 'center' }}>Payment Details</h2>
+      <Card>
+        <Section title="Payment Details" className="mb-6" />
 
-        <button
-          className="btn-primary"
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.2)',
+          padding: '1.5rem',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '2rem'
+        }}>
+          <h3 className="mb-4" style={{
+            borderBottom: '1px solid var(--border-color)',
+            paddingBottom: '0.75rem'
+          }}>
+            Booking Summary
+          </h3>
+
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Name</span>
+            <span className="font-medium">{bookingData.name}</span>
+          </div>
+
+          <div className="flex-between mb-4">
+            <span className="text-secondary">People</span>
+            <span className="font-medium">{bookingData.people}</span>
+          </div>
+
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Date</span>
+            <span className="font-medium">{bookingData.date}</span>
+          </div>
+
+          <div className="flex-between mb-4">
+            <span className="text-secondary">Time</span>
+            <span className="font-medium">{bookingData.time}</span>
+          </div>
+
+          <div className="flex-between mt-6 pt-4" style={{ borderTop: '1px dashed var(--border-color)' }}>
+            <span className="font-bold text-primary">Total Amount</span>
+            <span className="font-bold text-primary" style={{ fontSize: '1.5rem' }}>₹{total}</span>
+          </div>
+        </div>
+
+        <Button
           onClick={handlePayment}
           disabled={isProcessing}
+          style={{ fontSize: '1.1rem', padding: '16px' }}
         >
           {isProcessing ? 'Processing...' : `Pay ₹${total}`}
-        </button>
-      </div>
+        </Button>
+      </Card>
     </PageWrapper>
   );
 }
-

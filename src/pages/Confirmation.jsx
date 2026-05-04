@@ -1,24 +1,25 @@
 import { useNavigate, Navigate } from 'react-router-dom';
 import { CheckCircle, Home, Calendar, Clock, Users, Phone, User, Hash } from 'lucide-react';
 import PageWrapper from '../components/PageWrapper';
+import Card from '../components/Card';
+import Section from '../components/Section';
+import Button from '../components/Button';
 import { useBooking } from '../context/BookingContext';
+import { generateWhatsAppLink } from '../utils/whatsapp';
 
 export default function Confirmation() {
   const navigate = useNavigate();
   const { bookingData, setBookingData } = useBooking();
 
-  // Guard: redirect if accessed directly
   if (!bookingData || !bookingData.name) {
     return <Navigate to="/" />;
   }
 
   const handleGoHome = () => {
-    // Clear context so back button on other pages can't return to a stale state
     setBookingData({});
     navigate('/');
   };
 
-  // Build rows from bookingData — only show fields that exist
   const isParty = bookingData.type === 'party';
 
   const detailRows = [
@@ -33,127 +34,93 @@ export default function Confirmation() {
   ].filter(Boolean);
 
   return (
-    <PageWrapper
-      className="main-content"
-      style={{ gridTemplateColumns: '1fr', maxWidth: '540px', margin: '0 auto' }}
-    >
-      <div className="glass-panel" style={{ textAlign: 'center' }}>
-
-        {/* Success icon */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <div className="success-check">
-            <CheckCircle size={32} />
+    <PageWrapper className="main-content" style={{ maxWidth: '600px' }}>
+      <Card className="text-center" style={{ padding: '3rem 2rem' }}>
+        <div className="flex-center mb-6">
+          <div style={{
+            background: 'rgba(34, 197, 94, 0.2)',
+            color: 'var(--accent)',
+            padding: '1.5rem',
+            borderRadius: '50%',
+            boxShadow: '0 0 30px rgba(34, 197, 94, 0.2)'
+          }}>
+            <CheckCircle size={48} />
           </div>
         </div>
 
-        <h2 style={{ marginBottom: '0.4rem', fontSize: 'clamp(1.4rem, 5vw, 1.9rem)' }}>
-          🎉 Booking Confirmed!
+        <h2 className="mb-2 text-gradient" style={{ fontSize: '2.5rem' }}>
+          Booking Confirmed!
         </h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>
+        <p className="text-secondary mb-8" style={{ fontSize: '1.1rem' }}>
           {isParty
             ? 'Your party hall has been successfully reserved.'
             : 'Your table has been successfully reserved.'}
         </p>
 
-        {/* ── Booking Details Card ──────────────── */}
         <div style={{
           textAlign: 'left',
-          background: 'rgba(15, 23, 42, 0.55)',
+          background: 'rgba(0, 0, 0, 0.2)',
           border: '1px solid var(--border-color)',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          marginBottom: '1.75rem',
+          borderRadius: 'var(--radius-lg)',
+          padding: '1.5rem',
+          marginBottom: '2rem',
         }}>
-          <p style={{
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color: 'var(--text-muted)',
-            marginBottom: '1rem',
-          }}>
+          <h4 className="text-secondary mb-4 uppercase" style={{ fontSize: '0.85rem', letterSpacing: '1px' }}>
             Booking Details
-          </p>
+          </h4>
 
-          {detailRows.map(({ icon: Icon, label, value }) => (
-            <div
-              key={label}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.6rem 0',
-                borderBottom: '1px solid var(--border-color)',
-                gap: '1rem',
-              }}
-            >
-              <span style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                color: 'var(--text-muted)',
-                fontSize: '0.88rem',
-                minWidth: 0,
-              }}>
-                {Icon && <Icon size={14} style={{ flexShrink: 0 }} />}
-                {label}
-              </span>
-              <span style={{
-                fontWeight: 500,
-                fontSize: '0.9rem',
-                textAlign: 'right',
-                textTransform: 'capitalize',
-                wordBreak: 'break-word',
-              }}>
-                {value}
-              </span>
-            </div>
-          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {detailRows.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex-between pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <span className="text-secondary flex-center" style={{ gap: '0.5rem', fontSize: '0.95rem' }}>
+                  {Icon && <Icon size={16} />}
+                  {label}
+                </span>
+                <span className="font-medium" style={{ textAlign: 'right', textTransform: 'capitalize', fontSize: '1rem' }}>
+                  {value}
+                </span>
+              </div>
+            ))}
+          </div>
 
-          {/* Total paid */}
           {bookingData.total != null && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '0.75rem 0 0',
-              marginTop: '0.25rem',
-            }}>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                Total Paid
-              </span>
-              <span className="text-gradient" style={{ fontSize: '1.35rem', fontWeight: 700 }}>
+            <div className="flex-between mt-4 pt-2">
+              <span className="text-secondary font-medium">Total Paid</span>
+              <span className="text-gradient font-bold" style={{ fontSize: '1.5rem' }}>
                 ₹{bookingData.total}
               </span>
             </div>
           )}
         </div>
 
-        {/* ── Discount notice for table bookings ── */}
         {!isParty && (
           <div style={{
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '8px',
-            padding: '0.75rem 1rem',
-            marginBottom: '1.5rem',
-            fontSize: '0.875rem',
-            color: 'var(--secondary)',
+            background: 'rgba(34, 197, 94, 0.1)',
+            border: '1px solid var(--accent)',
+            borderRadius: 'var(--radius-md)',
+            padding: '1rem',
+            marginBottom: '2rem',
+            color: 'var(--accent)',
+            fontWeight: 500
           }}>
             🎁 Show this confirmation at the pub to claim your <strong>10% discount</strong>!
           </div>
         )}
 
-        {/* ── Back to Home ─────────────────────── */}
-        <button
-          className="btn-primary"
-          onClick={handleGoHome}
-          style={{ marginTop: 0 }}
+        <a
+          href={generateWhatsAppLink(isParty ? "party" : "table", bookingData)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="whatsapp-btn flex-center"
+          style={{ width: '100%', marginBottom: '1rem', padding: '16px', gap: '0.5rem', fontSize: '1.1rem' }}
         >
-          <Home size={18} /> Back to Home
-        </button>
+          📱 Send Confirmation on WhatsApp
+        </a>
 
-      </div>
+        <Button onClick={handleGoHome} style={{ padding: '16px', fontSize: '1.1rem' }}>
+          <Home size={20} className="mr-2" /> Back to Home
+        </Button>
+      </Card>
     </PageWrapper>
   );
 }

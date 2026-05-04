@@ -6,8 +6,7 @@ import TablePayment from './pages/table/TablePayment';
 import PartySelection from './pages/party/PartySelection';
 import PartyGuestDetails from './pages/party/PartyGuestDetails';
 import PartyMenuSelection from './pages/party/PartyMenuSelection';
-import LiquorMenu from './pages/party/LiquorMenu';
-import NonLiquorMenu from './pages/party/NonLiquorMenu';
+import PartyMenu from './pages/party/PartyMenu';
 import PartyPayment from './pages/party/PartyPayment';
 import Confirmation from './pages/Confirmation';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -31,8 +30,7 @@ function AnimatedRoutes() {
         <Route path="/party" element={<PartySelection />} />
         <Route path="/party/details" element={<PartyGuestDetails />} />
         <Route path="/party/menu-type" element={<PartyMenuSelection />} />
-        <Route path="/party/menu/liquor" element={<LiquorMenu />} />
-        <Route path="/party/menu/non-liquor" element={<NonLiquorMenu />} />
+        <Route path="/party/menu/:menuType" element={<PartyMenu />} />
         <Route path="/party/payment" element={<PartyPayment />} />
         
         {/* Shared Confirmation */}
