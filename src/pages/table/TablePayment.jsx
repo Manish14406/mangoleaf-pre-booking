@@ -96,22 +96,12 @@ export default function TablePayment() {
         return;
       }
 
-      const fnResponse = await fetch(
-        `${SUPABASE_URL}/functions/v1/create-order`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'apikey': SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ amount: total }),
-        }
-      );
+      const { data: orderData, error: functionError } = await supabase.functions.invoke("create-order", {
+        body: { amount: total }
+      });
 
-      const orderData = await fnResponse.json();
-
-      if (!fnResponse.ok || !orderData?.id) {
+      if (functionError || !orderData?.id) {
+        console.error('Edge function error:', functionError, orderData);
         await supabase
           .from('table_bookings')
           .delete()
