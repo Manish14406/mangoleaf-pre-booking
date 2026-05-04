@@ -4,7 +4,7 @@ import PageWrapper from '../../components/PageWrapper';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Section from '../../components/Section';
-import { RefreshCw, Filter, DollarSign, Calendar, Hash, CheckCircle, XCircle } from 'lucide-react';
+import { RefreshCw, Filter, DollarSign, Calendar, Hash, CheckCircle, XCircle, Users } from 'lucide-react';
 
 const getTodayString = () => {
   const now = new Date();
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading]       = useState(true);
   const [error, setError]               = useState(null);
   const [actionId, setActionId]         = useState(null);
-  const [showTodayOnly, setShowTodayOnly] = useState(true);
+  const [showTodayOnly, setShowTodayOnly] = useState(false);
   const [bookingType, setBookingType]   = useState('party');
 
   const fetchBookings = async () => {
