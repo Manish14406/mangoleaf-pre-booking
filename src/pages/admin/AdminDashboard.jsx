@@ -176,7 +176,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="desktop-grid mb-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-        <StatCard icon={<Calendar size={24} />} iconBg="rgba(217,119,6,0.2)" iconColor="var(--primary)"  label="Bookings Today" value={todayBookings.length} />
+        <StatCard icon={<Calendar size={24} />} iconBg="rgba(5, 150, 105, 0.2)" iconColor="var(--primary)"  label="Bookings Today" value={todayBookings.length} />
         <StatCard icon={<CheckCircle size={24} />} iconBg="rgba(16,185,129,0.2)" iconColor="#10b981"     label="Confirmed Today" value={confirmedToday} />
         <StatCard icon={<DollarSign size={24} />} iconBg="rgba(59,130,246,0.2)" iconColor="#3b82f6"      label="Revenue Today" value={`₹${revenueToday}`} />
         <StatCard icon={<Hash size={24} />} iconBg="rgba(168,85,247,0.2)" iconColor="#a855f7"            label="Total Bookings" value={allBookings.length} />

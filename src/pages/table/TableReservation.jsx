@@ -201,7 +201,7 @@ export default function TableReservation() {
         <Section title="Table Reservation Details" className="mb-6" />
 
         <div style={{ 
-          background: 'rgba(34, 197, 94, 0.1)', 
+          background: 'rgba(5, 150, 105, 0.1)', 
           border: '1px solid var(--accent)', 
           padding: '1rem', 
           borderRadius: 'var(--radius-md)', 

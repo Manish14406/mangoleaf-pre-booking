@@ -34,8 +34,8 @@ export default function AdminLogin() {
         {/* Icon */}
         <div style={{
           width: 64, height: 64, borderRadius: '50%',
-          background: 'rgba(217,119,6,0.15)',
-          border: '1px solid rgba(217,119,6,0.3)',
+          background: 'rgba(5, 150, 105, 0.15)',
+          border: '1px solid rgba(5, 150, 105, 0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 1.5rem',
           color: 'var(--primary)',

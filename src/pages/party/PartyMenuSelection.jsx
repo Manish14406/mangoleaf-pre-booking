@@ -51,7 +51,7 @@ export default function PartyMenuSelection() {
             style={{ border: 'none', background: 'transparent', textAlign: 'left', width: '100%' }}
           >
             <Card className="hover-scale flex-center" style={{ flexDirection: 'column', height: '100%', padding: '2rem' }}>
-              <div style={{ background: 'rgba(22, 163, 74, 0.1)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+              <div style={{ background: 'rgba(5, 150, 105, 0.15)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem', boxShadow: '0 0 20px rgba(5, 150, 105, 0.1)' }}>
                 <Wine size={48} color="var(--primary)" />
               </div>
               <h3 className="mb-4">Liquor Menu</h3>
@@ -66,7 +66,7 @@ export default function PartyMenuSelection() {
             style={{ border: 'none', background: 'transparent', textAlign: 'left', width: '100%' }}
           >
             <Card className="hover-scale flex-center" style={{ flexDirection: 'column', height: '100%', padding: '2rem' }}>
-              <div style={{ background: 'rgba(34, 197, 94, 0.1)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: '1.25rem', borderRadius: '50%', marginBottom: '1.5rem', boxShadow: '0 0 20px rgba(16, 185, 129, 0.1)' }}>
                 <Coffee size={48} color="var(--accent)" />
               </div>
               <h3 className="mb-4">Non-Liquor Menu</h3>

@@ -38,11 +38,11 @@ export default function Confirmation() {
       <Card className="text-center" style={{ padding: '3rem 2rem' }}>
         <div className="flex-center mb-6">
           <div style={{
-            background: 'rgba(34, 197, 94, 0.2)',
+            background: 'rgba(5, 150, 105, 0.2)',
             color: 'var(--accent)',
             padding: '1.5rem',
             borderRadius: '50%',
-            boxShadow: '0 0 30px rgba(34, 197, 94, 0.2)'
+            boxShadow: '0 0 30px rgba(5, 150, 105, 0.2)'
           }}>
             <CheckCircle size={48} />
           </div>
@@ -95,7 +95,7 @@ export default function Confirmation() {
 
         {!isParty && (
           <div style={{
-            background: 'rgba(34, 197, 94, 0.1)',
+            background: 'rgba(5, 150, 105, 0.1)',
             border: '1px solid var(--accent)',
             borderRadius: 'var(--radius-md)',
             padding: '1rem',

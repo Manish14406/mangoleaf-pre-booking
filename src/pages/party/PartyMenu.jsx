@@ -191,7 +191,7 @@ export default function PartyMenu() {
             const isSelected = qty > 0;
             
             return (
-              <div key={item.id} className="menu-item-card" style={isSelected ? { borderColor: 'var(--primary)', background: 'rgba(22, 163, 74, 0.05)' } : {}}>
+              <div key={item.id} className="menu-item-card" style={isSelected ? { borderColor: 'var(--primary)', background: 'rgba(5, 150, 105, 0.05)' } : {}}>
                 <div>
                   <h4 className="mb-2" style={{ color: isSelected ? 'var(--primary)' : 'var(--text-primary)' }}>{item.name}</h4>
                   <span className="font-bold text-secondary">₹{item.price}</span>

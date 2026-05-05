@@ -156,7 +156,7 @@ export default function TablePayment() {
           contact: bookingData.phone
         },
         theme: {
-          color: "#16a34a"
+          color: "var(--primary)"
         },
         modal: {
           ondismiss: async function () {
