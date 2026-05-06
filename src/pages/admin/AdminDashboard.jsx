@@ -1,10 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { supabase } from '../../lib/supabase';
 import PageWrapper from '../../components/PageWrapper';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Section from '../../components/Section';
-import { RefreshCw, Filter, DollarSign, Calendar, Hash, CheckCircle, XCircle, Users } from 'lucide-react';
+import { RefreshCw, Filter, DollarSign, Calendar, Hash, CheckCircle, XCircle, Users, ChevronDown, ChevronUp, UtensilsCrossed } from 'lucide-react';
+
+// Safely parse selected_items — handles null, empty array, or invalid data
+const parseItems = (raw) => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(i => i && i.name && i.quantity > 0);
+  try { return JSON.parse(raw).filter(i => i && i.name && i.quantity > 0); }
+  catch { return []; }
+};
 
 const getTodayString = () => {
   const now = new Date();
@@ -42,11 +50,13 @@ function StatusBadge({ status }) {
 
 export default function AdminDashboard() {
   const [allBookings, setAllBookings]   = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [isLoading, setIsLoading]       = useState(true);
   const [error, setError]               = useState(null);
   const [actionId, setActionId]         = useState(null);
   const [showTodayOnly, setShowTodayOnly] = useState(false);
   const [bookingType, setBookingType]   = useState('party');
+  const [expandedBooking, setExpandedBooking] = useState(null);
 
   const fetchBookings = async () => {
     setIsLoading(true);
@@ -58,17 +68,25 @@ export default function AdminDashboard() {
         const res = await supabase
           .from('party_bookings')
           .select('*')
+          .neq('status', 'pending')
           .order('created_at', { ascending: false });
         data = res.data;
         fetchError = res.error;
       } else {
+        // Fetch all table bookings and split pending vs confirmed/cancelled
         const res = await supabase
           .from('table_bookings')
           .select('*')
           .order('date', { ascending: true })
           .order('time', { ascending: true });
-        data = res.data;
         fetchError = res.error;
+        if (!fetchError && res.data) {
+          const pending = res.data.filter(b => b.status === 'pending');
+          setPendingCount(pending.length);
+          data = res.data.filter(b => b.status !== 'pending');
+        } else {
+          data = res.data;
+        }
       }
 
       if (fetchError) {
@@ -86,11 +104,17 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    // Reset pending count when switching away from table bookings
+    if (bookingType === 'party') setPendingCount(0);
+
     fetchBookings();
 
+    const channelName = bookingType === 'table' ? 'admin-table-bookings' : 'admin-party-bookings';
+    const tableName   = bookingType === 'table' ? 'table_bookings'       : 'party_bookings';
+
     const channel = supabase
-      .channel('admin-bookings')
-      .on('postgres_changes', { event: '*', schema: 'public', table: bookingType === 'table' ? 'table_bookings' : 'party_bookings' }, () => {
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, () => {
         fetchBookings();
       })
       .subscribe();
@@ -188,6 +212,27 @@ export default function AdminDashboard() {
         className="text-left"
       />
 
+      {bookingType === 'table' && pendingCount > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          background: 'rgba(245,158,11,0.1)',
+          border: '1px solid rgba(245,158,11,0.3)',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.65rem 1rem',
+          marginBottom: '1.5rem',
+          fontSize: '0.875rem',
+          color: '#f59e0b',
+          fontWeight: 500,
+        }}>
+          <span style={{ fontSize: '1rem' }}>⏳</span>
+          <span>
+            <strong>{pendingCount}</strong> payment{pendingCount > 1 ? 's' : ''} currently in-progress (awaiting Razorpay confirmation). These will appear here once payment is complete.
+          </span>
+        </div>
+      )}
+
       {error && (
         <Card className="mb-6" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444' }}>
           <p className="text-error m-0 font-medium">⚠ {error}</p>
@@ -228,50 +273,102 @@ export default function AdminDashboard() {
                 {displayed.map((b) => {
                   const isUpdating = actionId === b.id;
                   return (
-                    <tr key={b.id} style={{ opacity: isUpdating ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-                      {bookingType === 'table' ? (
-                        <>
-                          <td className="p-4 font-bold text-primary">{b.table_id ?? '—'}</td>
-                          <td className="p-4 font-medium">{b.name}</td>
-                          <td className="p-4 text-secondary">{b.phone}</td>
-                          <td className="p-4">{b.people}</td>
-                          <td className="p-4 whitespace-nowrap">
-                            {b.date} <br/><span className="text-sm text-secondary">{b.time}</span>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="p-4 font-bold text-primary capitalize">{b.party_type || b.menu_type || '—'}</td>
-                          <td className="p-4 font-medium">{b.name}</td>
-                          <td className="p-4 text-secondary">{b.phone}</td>
-                          <td className="p-4">{b.guests || b.people}</td>
-                          <td className="p-4 whitespace-nowrap">
-                            {b.date} <br/>
-                            <span className="text-sm text-secondary">
-                              {b.time === 'morning' ? '12 PM - 3 PM' : b.time === 'night' ? '7 PM - 11 PM' : b.time}
-                            </span>
-                          </td>
-                        </>
-                      )}
-                      <td className="p-4 font-bold text-gradient">₹{b.total}</td>
-                      {bookingType === 'party' && (
-                        <td className="p-4 font-medium">{b.advance_paid ? `₹${b.advance_paid}` : '—'}</td>
-                      )}
-                      <td className="p-4">
-                        <StatusBadge status={b.status} />
-                      </td>
-                      <td className="p-4">
-                        <ActionButtons
-                          status={b.status}
-                          isUpdating={isUpdating}
-                          onConfirm={() => updateStatus(b.id, 'confirmed')}
-                          onCancel={() => updateStatus(b.id, 'cancelled')}
-                        />
-                      </td>
-                    </tr>
+                    <Fragment key={b.id}>
+                      <tr style={{ opacity: isUpdating ? 0.5 : 1, transition: 'opacity 0.2s', cursor: bookingType === 'party' ? 'pointer' : 'default' }} onClick={() => bookingType === 'party' && setExpandedBooking(expandedBooking === b.id ? null : b.id)}>
+                        {bookingType === 'table' ? (
+                          <>
+                            <td className="p-4 font-bold text-primary">{b.table_id ?? '—'}</td>
+                            <td className="p-4 font-medium">{b.name}</td>
+                            <td className="p-4 text-secondary">{b.phone}</td>
+                            <td className="p-4">{b.people}</td>
+                            <td className="p-4 whitespace-nowrap">
+                              {b.date} <br/><span className="text-sm text-secondary">{b.time}</span>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="p-4 font-bold text-primary capitalize">
+                              <div className="flex items-center gap-2">
+                                {b.party_type || b.menu_type || '—'}
+                                {b.selected_items?.length > 0 && (
+                                  <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded text-[10px] uppercase font-bold">
+                                    {b.selected_items.length} Items
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-4 font-medium">{b.name}</td>
+                            <td className="p-4 text-secondary">{b.phone}</td>
+                            <td className="p-4">{b.guests || b.people}</td>
+                            <td className="p-4 whitespace-nowrap">
+                              {b.date} <br/>
+                              <span className="text-sm text-secondary">
+                                {b.time === 'morning' ? '12 PM - 3 PM' : b.time === 'night' ? '7 PM - 11 PM' : b.time}
+                              </span>
+                            </td>
+                          </>
+                        )}
+                        <td className="p-4 font-bold text-gradient">₹{b.total}</td>
+                        {bookingType === 'party' && (
+                          <td className="p-4 font-medium">{b.advance_paid ? `₹${b.advance_paid}` : '—'}</td>
+                        )}
+                        <td className="p-4">
+                          <StatusBadge status={b.status} />
+                        </td>
+                        <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                          <ActionButtons
+                            status={b.status}
+                            isUpdating={isUpdating}
+                            onConfirm={() => updateStatus(b.id, 'confirmed')}
+                            onCancel={() => updateStatus(b.id, 'cancelled')}
+                          />
+                        </td>
+                      </tr>
+                      {expandedBooking === b.id && bookingType === 'party' && (() => {
+                        const items = parseItems(b.selected_items);
+                        return (
+                          <tr>
+                            <td colSpan="9" style={{ padding: 0 }}>
+                              <div style={{ background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ padding: '1rem 1.5rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <UtensilsCrossed size={16} color="var(--primary)" />
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--primary)' }}>
+                                    Ordered Food Items
+                                  </span>
+                                  {items.length > 0 && (
+                                    <span style={{ fontSize: '0.7rem', background: 'rgba(5,150,105,0.15)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '999px', marginLeft: '0.25rem' }}>
+                                      {items.reduce((s, i) => s + i.quantity, 0)} qty · ₹{items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0)}
+                                    </span>
+                                  )}
+                                </div>
+                                {items.length === 0 ? (
+                                  <div style={{ padding: '0.75rem 1.5rem 1rem', color: 'var(--text-muted)', fontSize: '0.875rem', fontStyle: 'italic' }}>
+                                    No food items selected for this booking.
+                                  </div>
+                                ) : (
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.5rem', padding: '0 1.5rem 1.25rem' }}>
+                                    {items.map((item, idx) => (
+                                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.04)', padding: '0.6rem 0.875rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        <div>
+                                          <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{item.name}</div>
+                                          {item.price > 0 && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>₹{item.price} each</div>}
+                                        </div>
+                                        <span style={{ background: 'rgba(5,150,105,0.15)', color: 'var(--primary)', fontWeight: 700, padding: '3px 10px', borderRadius: '6px', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                          × {item.quantity}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })()}
+                    </Fragment>
                   );
                 })}
-              </tbody>
+            </tbody>
             </table>
           </Card>
 
@@ -311,6 +408,37 @@ export default function AdminDashboard() {
                       </div>
                     )}
                   </div>
+
+                  {bookingType === 'party' && (() => {
+                    const items = parseItems(b.selected_items);
+                    return (
+                      <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', overflow: 'hidden' }}>
+                        <div style={{ padding: '0.6rem 0.875rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <UtensilsCrossed size={13} color="var(--primary)" />
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--primary)' }}>Ordered Items</span>
+                          {items.length > 0 && (
+                            <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                              {items.reduce((s, i) => s + i.quantity, 0)} items
+                            </span>
+                          )}
+                        </div>
+                        {items.length === 0 ? (
+                          <div style={{ padding: '0.6rem 0.875rem', fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            No food items selected.
+                          </div>
+                        ) : (
+                          <div style={{ padding: '0.5rem 0.875rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {items.map((item, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>{item.name}</span>
+                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>× {item.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <ActionButtons
                     status={b.status}

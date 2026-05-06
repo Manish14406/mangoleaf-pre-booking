@@ -31,6 +31,22 @@ export default function PartyPayment() {
         return;
       }
 
+      // Final availability check before creating order
+      const { data: existing, error: checkError } = await supabase
+        .from('party_bookings')
+        .select('id')
+        .eq('date', bookingData.date)
+        .eq('time', bookingData.time)
+        .neq('status', 'cancelled')
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+      if (existing) {
+        alert("This session was just booked by someone else. Please go back and select another date or time.");
+        setIsProcessing(false);
+        return;
+      }
+
       const { data, error: functionError } = await supabase.functions.invoke("create-order", {
         body: { amount: advanceAmount }
       });
@@ -59,17 +75,21 @@ export default function PartyPayment() {
             menu_type: bookingData.partyType || bookingData.menuType || bookingData.eventType,
             total: Number(totalAmount),
             advance_paid: Number(advanceAmount),
-            status: "confirmed"
+            status: 'confirmed',
+            payment_id: response.razorpay_payment_id,
+            order_id:   response.razorpay_order_id,
+            selected_items: bookingData.selectedItems || []
           };
 
-          const { error } = await supabase
-            .from("party_bookings")
+          const { data: inserted, error } = await supabase
+            .from('party_bookings')
             .insert([insertPayload])
-            .select();
+            .select()
+            .single();
 
           if (error) {
-            console.error("SUPABASE INSERT ERROR:", error);
-            alert(error.message);
+            console.error('SUPABASE INSERT ERROR:', error.message, error.code);
+            alert('Booking could not be saved. Please contact support with payment ID: ' + response.razorpay_payment_id);
             setIsProcessing(false);
             return;
           }
@@ -79,11 +99,11 @@ export default function PartyPayment() {
             type: 'party',
             total: totalAmount,
             advance: advanceAmount,
-            bookingId: `PTY-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+            bookingId: inserted?.id ? `PTY-${String(inserted.id).slice(-4).padStart(4, '0')}` : `PTY-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
             paymentId: response.razorpay_payment_id
           });
 
-          navigate("/confirmation");
+          navigate('/confirmation');
         },
         modal: {
           ondismiss: function () {
