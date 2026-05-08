@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Calendar, Users, User, Phone, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Calendar, Users, User, Phone, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 import PageWrapper from '../../components/PageWrapper';
 import Card from '../../components/Card';
@@ -45,6 +46,40 @@ export default function PartyGuestDetails() {
   });
 
   const [errors, setErrors] = useState({});
+  const [isChecking, setIsChecking] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(true);
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (formData.date && formData.time) {
+        setIsChecking(true);
+        try {
+          const { data, error } = await supabase
+            .from('party_bookings')
+            .select('id')
+            .eq('date', formData.date)
+            .eq('time', formData.time)
+            .neq('status', 'cancelled');
+
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            setIsAvailable(false);
+            setErrors(prev => ({ ...prev, time: 'This session is already booked for the selected date.' }));
+          } else {
+            setIsAvailable(true);
+            setErrors(prev => ({ ...prev, time: '' }));
+          }
+        } catch (err) {
+          console.error('Availability check error:', err);
+        } finally {
+          setIsChecking(false);
+        }
+      }
+    };
+
+    checkAvailability();
+  }, [formData.date, formData.time]);
 
   if (!bookingData || !bookingData.eventType) {
     return <Navigate to="/party" />;
@@ -128,8 +163,8 @@ export default function PartyGuestDetails() {
       newErrors.date = `Bookings can only be made up 1 year in advance.`;
     }
 
-    if (!formData.time) {
-      newErrors.time = 'Please select a session slot.';
+    if (!isAvailable) {
+      newErrors.time = 'This session is already booked.';
     }
 
     setErrors(newErrors);
@@ -158,7 +193,9 @@ export default function PartyGuestDetails() {
     formData.guests < MIN_GUESTS ||
     formData.guests > MAX_GUESTS ||
     !formData.date ||
-    !formData.time;
+    !formData.time ||
+    !isAvailable ||
+    isChecking;
 
   return (
     <PageWrapper className="main-content">
@@ -259,6 +296,7 @@ export default function PartyGuestDetails() {
                   </option>
                 ))}
               </select>
+              {isChecking && <span className="flex-center mt-1 text-sm text-secondary"><Loader2 size={14} className="spinning mr-1" /> Checking availability...</span>}
               {errors.time && <span className="error-message">⚠ {errors.time}</span>}
             </div>
           </div>

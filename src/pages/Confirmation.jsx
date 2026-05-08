@@ -84,12 +84,22 @@ export default function Confirmation() {
           </div>
 
           {bookingData.total != null && (
-            <div className="flex-between mt-4 pt-2">
-              <span className="text-secondary font-medium">Total Paid</span>
-              <span className="text-gradient font-bold" style={{ fontSize: '1.5rem' }}>
-                ₹{bookingData.total}
-              </span>
-            </div>
+            <>
+              {isParty && bookingData.advance && (
+                <div className="flex-between mt-4 pt-2" style={{ borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
+                  <span className="text-secondary font-medium">Total Bill</span>
+                  <span className="font-medium" style={{ fontSize: '1.1rem' }}>
+                    ₹{bookingData.total}
+                  </span>
+                </div>
+              )}
+              <div className="flex-between mt-3">
+                <span className="text-secondary font-medium">{isParty ? 'Advance Paid (50%)' : 'Total Paid'}</span>
+                <span className="text-gradient font-bold" style={{ fontSize: '1.5rem' }}>
+                  ₹{isParty ? bookingData.advance : bookingData.total}
+                </span>
+              </div>
+            </>
           )}
         </div>
 

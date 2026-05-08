@@ -13,7 +13,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function TablePayment() {
   const navigate = useNavigate();
-  const { bookingData } = useBooking();
+  const { bookingData, setBookingData } = useBooking();
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -138,10 +138,16 @@ export default function TablePayment() {
 
             if (error) {
               console.error("CONFIRM ERROR:", error);
-              alert(error.message);
+              alert('Booking could not be confirmed. Please contact support with payment ID: ' + response.razorpay_payment_id);
               setIsProcessing(false);
               return;
             }
+
+            setBookingData(prev => ({
+              ...prev,
+              bookingId: `TBL-${String(pendingBooking.id).slice(-4).padStart(4, '0')}`,
+              paymentId: response.razorpay_payment_id
+            }));
 
             navigate('/confirmation');
 
