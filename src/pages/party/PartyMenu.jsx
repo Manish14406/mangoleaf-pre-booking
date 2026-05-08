@@ -7,78 +7,7 @@ import Section from '../../components/Section';
 import Button from '../../components/Button';
 import { useBooking } from '../../context/BookingContext';
 
-const menuData = [
-  {
-    category: "Soups",
-    items: [
-      { id: 1, name: "Veg Manchow Soup", price: 119 },
-      { id: 2, name: "Cream Of Tomato Soup", price: 99 },
-      { id: 3, name: "Chicken Manchow Soup", price: 149 }
-    ]
-  },
-  {
-    category: "Veg Starters",
-    items: [
-      { id: 10, name: "Baby Corn Chilli", price: 209 },
-      { id: 11, name: "Paneer Chilli", price: 269 },
-      { id: 12, name: "Gobi Manchurian", price: 199 }
-    ]
-  },
-  {
-    category: "Non-Veg Starters",
-    items: [
-      { id: 15, name: "Chicken Chilli", price: 289 },
-      { id: 16, name: "Chicken 65", price: 279 },
-      { id: 17, name: "Mutton Pepper Dry", price: 349 }
-    ]
-  },
-  {
-    category: "Indian Gravy",
-    items: [
-      { id: 20, name: "Paneer Butter Masala", price: 239 },
-      { id: 21, name: "Dal Fry", price: 185 },
-      { id: 22, name: "Chicken Tikka Masala", price: 319 }
-    ]
-  },
-  {
-    category: "Chinese",
-    items: [
-      { id: 25, name: "Veg Hakka Noodles", price: 179 },
-      { id: 26, name: "Chicken Schezwan Noodles", price: 229 }
-    ]
-  },
-  {
-    category: "Rice & Noodles",
-    items: [
-      { id: 30, name: "Veg Fried Rice", price: 189 },
-      { id: 31, name: "Chicken Fried Rice", price: 259 }
-    ]
-  },
-  {
-    category: "Breads",
-    items: [
-      { id: 40, name: "Butter Naan", price: 45 },
-      { id: 41, name: "Tandoori Roti", price: 30 },
-      { id: 42, name: "Garlic Naan", price: 55 }
-    ]
-  },
-  {
-    category: "Desserts",
-    items: [
-      { id: 50, name: "Gulab Jamun (2 pcs)", price: 79 },
-      { id: 51, name: "Vanilla Ice Cream", price: 99 },
-      { id: 52, name: "Sizzling Brownie", price: 189 }
-    ]
-  },
-  {
-    category: "Beverages",
-    items: [
-      { id: 60, name: "Fresh Lime Soda", price: 89 },
-      { id: 61, name: "Virgin Mojito", price: 129 },
-      { id: 62, name: "Cold Coffee", price: 149 }
-    ]
-  }
-];
+import { menuData } from '../../utils/menuData';
 
 export default function PartyMenu() {
   const navigate = useNavigate();

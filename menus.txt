@@ -1,0 +1,392 @@
+// Please paste your menus with prices here.
+// I will read this file once you are done, and update the application accordingly!
+SOUPS
+VEG
+Item	Price
+Veg Manchow Soup	119
+Cream Of Tomato Soup	99
+Cream Of Mushroom Soup	119
+Cream Of Veg Soup	99
+Hot & Sour Veg Soup	119
+Sweet Corn Mushroom Soup	119
+Sweet Corn Veg Soup	114
+Lemon Coriander Veg	109
+NON-VEG
+Item	Price
+Chicken Clear Soup	139
+Chicken Manchow Soup	149
+Mutton Leg Soup	159
+Mutton Plan Soup	139
+Sweet Corn Chicken Soup	145
+Hot & Sour Chicken Soup	139
+Cream Of Chicken Soup	129
+Crab Soup	169
+VEG STARTER
+Item	Price
+All Day Potato Fries	169
+All Day Potato Peri Peri	179
+Baby Corn Chilli	209
+Baby Corn Manchurian	209
+Baby Corn Salt & Pepper Dry	209
+Baby Corn Schezwan	209
+Boiled Veg	139
+Cauliflower Schezwan	189
+Chill Potato	189
+Corn Chesse Ball	289
+Crispy Baby Corn In Chili Hoison Sauce	229
+Gobi Manchurian	199
+Gobi Salt & Pepper Dry	199
+Golden Fry Baby Corn	215
+Harabara Kebab	280
+Kaju Pepper Dry	295
+Kung Pao Baby Corn	209
+Masala Papad	75
+Mushroom 65	249
+Mushroom Chilli	249
+Mushroom Manchurian	249
+Mushroom Pepper Dry	249
+Mushroom Schezwan	249
+Paneer 65	269
+Paneer Chilli	269
+Paneer Ghee Rost	289
+Paneer Manchurian	269
+Paneer Salt & Pepper Dry	279
+Paneer Schezwan	269
+Peanut Masala	149
+Potato Chilli Style	199
+Roasted Papad	59
+Veg Cheese Ball	229
+Veg Spring Roll	329
+ANDHRA STYLE
+Item	Price
+Amaravthi Chicken Fry	279
+Andhra Chicken Kabab	249
+Chicken Fry Boneless	269
+Chilli Chicken Andra Style	269
+Guntur Chicken	279
+Mutton Kebab	429
+MUTTON STARTERS & MAIN COURSE
+Item	Price
+Mutton Masala	349
+Mutton Fry	389
+Mutton Dry	399
+Mutton Pepper Fry/Dry	399
+Mutton Chilli	389
+Mutton Chops	379
+Head Mutton	319
+Egg Boti	299
+Mutton Hyderabadi	369
+Mutton Kadai	379
+Mutton Nawabi	389
+Mutton Roghan Josh	399
+CHINESE STARTERS – NON VEG
+Item	Price
+Asian Hot Wings	319
+Chicken 65	275
+Chicken Angahara	365
+Chicken Cheese Ball	285
+Chicken Finger	239
+Chicken Hongkong	269
+Chicken Lollypop	275
+Chicken Manchurian	275
+Chicken Pepper Dry	275
+Chicken Spring Roll	349
+Chicken Strips	379
+Chilli Chicken	265
+Chilli Garlic Wings	285
+Crispy Chicken	289
+Dragon Chicken	275
+Drums Of Heaven	309
+Drunken Fried Chicken	264
+Egg Chilli	195
+Fish Finger	339
+French Chicken	289
+Garlic Chicken	275
+Grills Sirracha Chicken	379
+Honey Chilli Chicken	275
+Hongkong Chicken Fried Rice	265
+Kung Pao Chicken	285
+Lemon Chicken	265
+Thai Pai Chicken	289
+Mutton Chilli	419
+Peri Peri Pop Corn Chicken	389
+Peri Peri Wings	343
+Red Hot Fire Rum Chicken	345
+Schezwan Spicy Wings	275
+Spicy Honey Wings	275
+SEA BASE SPECIAL TOWN
+
+Seasonal Rates
+
+Ajwani Fish Tikka
+Anjal Fish Masala
+Anjal Fish Rava
+Anjal Fish Tawa
+Bangada Rava Fry
+Bangada Tawa Fry
+Grilled Tandoori Prawns
+Cocktail Fish Finger
+Crab Masala
+Crispy Fried Calameri
+Fish Chilli
+Fish Kebab
+Fish Manchurian
+Prawn In Butter Lemon
+Prawns 65
+Prawns Chilly
+Prawns Crispy
+Prawns Fry
+Prawns Ghee Roast
+Prawns Kabab
+Prawns Manchurian
+Prawns Masala
+Prawns Pepper Dry
+Silver Fish
+Silver Rava Fry
+Tandoori Bangada
+TANDOOR STARTERS
+VEG
+Item	Price
+Achari Paneer Tikka	289
+Bharwan Mushroom	259
+Desi Tandoori Pineapple	175
+Hariyali Paneer Tikka	285
+Malai Paneer Tikka	289
+Mamtaz Paneer	339
+Paneer Tikka	279
+Veg Platter	699
+NON VEG
+Item	Price
+Achari Kabab	289
+Angara Kabab Spicy	289
+Banjara Kabab Bone	289
+Banjara Kabab Boneless	299
+Non Veg Platter	1299
+Chicken Potli Kabab	489
+Chicken Tikka	289
+Chicken Seek Kabab	299
+Hariyali Kabab	285
+Kalmi kabab(1pc)	89
+Lasooni Kabab	285
+Laziz's Chicken Tikka	389
+Chicken Malai Tikka	299
+Reshmi Kabab	295
+Tandoori Chicken Wings	299
+Peshawari Chicken Tikka	319
+Tandoori Full	559
+Tandoori Half	299
+Tandoori Kabab	269
+INDIAN GRAVY – VEG
+Item	Price
+Dal Fry	185
+Dal Tadka	195
+Capsicum Masala	199
+Coriander Paneer Curry	269
+Egg Butter Masala	229
+Gobi Masala	199
+Green Peas Masala	189
+Kadai Mushroom	265
+Kadai Paneer	269
+Kaju Fry	299
+Kaju Masala	309
+Kaju Mutter	289
+Lazeez Paneer	269
+Malai Kofta	319
+Mix Veg Curry	219
+Mix Veg Kadai	249
+Mushroom Kadai	269
+Mushroom Capsicum	259
+Mushroom Masala	255
+Palak Makhni	219
+Palak Paneer	229
+Paneer Butter Masala	239
+Paneer Kadai	259
+Paneer Kaju Masala	299
+Paneer Kali Mirchi	239
+Paneer Kofta	259
+Paneer Kofta Palak Gravy	269
+Paneer Lababdar	265
+Paneer Mutter	249
+Paneer Shai Kurma	269
+Paneer Tikka Masala	269
+Plane Palak	209
+Veg Hyderabadi	249
+Veg Kadai	209
+Veg Kalimirchi	205
+Veg Kofta	239
+Veg Kolhapuri	229
+Veg Kolhapuri	205
+Veg Kurma	249
+Veg Makanwala	219
+Vegetable Dopyaza	205
+PAKODAS
+Item	Price
+Aloo Pakoda	109
+Capsicum Pakoda	155
+Egg Pakado	149
+Mix Veg Pakoda	159
+Onion Pakoda	149
+Onion Rings	155
+Paneer Pakoda	249
+INDIAN GRAVY – NON VEG
+Item	Price
+Chicken Butter Masala	289
+Chicken Adraki	275
+Chicken Do Payza	279
+Chicken Fry Bone	259
+Chicken Kadai	279
+Chicken Hyderabadi	275
+Chicken Jalfrezi	269
+Chicken Kalimirch	265
+Chicken Kolahpuri	279
+Chicken Lababdar	275
+Chicken Masala	265
+Chicken Nawab Masala	275
+Chicken Palak	259
+Chicken Patayala	319
+Chicken Phadi Masala	259
+Chicken Roghani Masala	269
+Chicken Seek Kebab Masala	249
+Chicken Tikka Masala	309
+Dal Gosht	349
+Dhaniya Murgh Masala	265
+Kadai Chicken In Ghee	279
+Mango Leaf Teen Patiyala	289
+Methi Gosht	379
+Methi Malai Murgh	399
+Mutton Hyderabadi	389
+Mutton Kadai	395
+Mutton Masala Gravy	379
+Mutton Nawabi	399
+Mutton Roghan Josh	399
+CHINESE GRAVY
+VEG
+Item	Price
+Mushroom Manchurian Gravy	279
+Baby Corn Manchurian Gravy	219
+Gobi Manchurain Gravy	189
+Paneer Chilly Gravy	349
+Paneer Manchurian Gravy	219
+NON VEG
+Item	Price
+Chilly Chicken Gravy	299
+Chilly Ckn Gravy (bonless)	349
+Chicken Manchurain Gravy	299
+Garlic Chicken Gravy	329
+Ginger Chicken Gravy	349
+INDIAN BREADS
+Item	Price
+Roti	55
+Butter Roti	63
+Paratha	59
+Butter Paratha	65
+Naan	69
+Butter Naan	75
+Kulcha	69
+Butter Kulcha	75
+Aloo Paratha	75
+Paneer Paratha	89
+Garlic Butter Naan	85
+Tandoori Lachha Paratha	75
+Plain Cheese Garlic	95
+Assorted Bread Basket	285
+Pulka	46
+Pudeena Kulcha	78
+RICE DISHES & NOODLES – VEG
+Item	Price
+Veg Fried Rice	189
+Mushroom Fried Rice	249
+Paneer Fried Rice	259
+Mix Veg Fried Rice	269
+Schezwan Fried Rice	209
+Veg Noodles	209
+Haka Noodles	219
+Schezwan Noodles	229
+Mix Veg Noodles	239
+Paneer Biryani	269
+Mushroom Biryani	259
+Tomato Rice	179
+Palak Kichadi	229
+Dal Kichadi	195
+Jeera Rice	189
+Ghee Rice	209
+Curd Rice	139
+Plain Rice	80
+RICE DISHES & NOODLES – NON VEG
+Item	Price
+Chicken Fried Rice	259
+Chicken Noodles	239
+Chicken Schezwan Fried Rice	269
+Chicken Schezwan Noodles	249
+Egg Fried Rice	199
+Egg Noodles	229
+Egg Schezwan Fried Rice	209
+Egg Schezwan Fried Rice	219
+Prawns Biriyani	389
+Prawns Fried Rice	379
+NATTI STYLE
+Item	Price
+Chicken Biryani	259
+Mutton Biryani	349
+Boti Fry	249
+Egg Boti Fry	269
+Chicken Chops	259
+RAITHAS AND SALADS
+Item	Price
+Mix Raitha	69
+Onion Raitha	59
+Plain Curd	39
+Pudeena Raitha	65
+Pineapple Raita	75
+Carat Salads	79
+Cucumber Salad	79
+Fruit Salad	169
+Fruit Salad With Ice Cream	189
+Watermelon Salad	99
+Green Salad	100
+Onion Salad	79
+Tomato Salad	79
+MOCKTAILS
+Item	Price
+Andhra Special	219
+Banglore Brezzer	249
+Cindrella	199
+Cranberry Mojito	179
+Fruit Punch	189
+Mango Lassi	149
+Orange Blossom	199
+Special Mocktail	219
+Stawberry Mojito	189
+Virigon Mojito	179
+Watermelon Mojito	169
+ICE CREAMS & MILK SHAKES
+Item	Price
+Butter Scotch/Mango/Pista	89
+Chacolate/Strawberry/Vanilla	79
+Triple Sundae	159
+Golden Cherry	190
+Gud Bud	189
+Honeymoon Special	199
+Grass Hopper	159
+Vanilla Milk Shake	149
+Strawberry Milk Shake	169
+Chocolate Milk Shake	159
+Mango Milk Shake	159
+Butterscotch Milk Shake	159
+Pista Green Milk Shake	159
+Hazelnut Milkshake	169
+BEVERAGES
+Item	Price
+Cold Coffee	199
+Mineral water 1ltr	20
+Monster 350ml	130
+Soda 250ml	18
+Red Bull	199
+Soda 750ml	30
+Soft drinks 250 ml	25
+Soft drinks 600ml	45
+Soft drinks 750ml	50
+Tonic water 300ml	70
+Plain Curd	50
+Lemon Juice	65
+Sweet And Salt Lime Soda	82 
