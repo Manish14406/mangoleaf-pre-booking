@@ -51,16 +51,25 @@ function AnimatedRoutes() {
   );
 }
 
-function App() {
+function AppContent() {
+  const location = useLocation();
   return (
-    <Router>
-      <div className="app-container">
-        <header className="header">
+    <div className="app-container">
+      {location.pathname !== '/' && (
+        <header className="header" style={{ marginBottom: '2rem' }}>
           <h1 className="text-gradient">Mango Leaf PUB & Restaurant</h1>
           <p>Premium Event & Table Reservations</p>
         </header>
-        <AnimatedRoutes />
-      </div>
+      )}
+      <AnimatedRoutes />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
